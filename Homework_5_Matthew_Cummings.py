@@ -1,0 +1,90 @@
+# Author: Matt Cummings
+# Date: 11/25/2025
+# Hash something out
+
+import csv
+import time
+
+class DataItem:
+    def __init__(self, line):
+        self.title = line[0]
+        self.genre = line[1]
+        self.releaseDate = line[2]
+        self.director = line[3]
+        self.revenue = line[4]
+        self.rating = line[5]
+        self.minDuration = line[6]
+        self.prodComp = line[7]
+        self.quote = line[8]
+
+def hashFunction(stringData):
+    key = 0
+    for i in range (len(stringData)):
+        key = key + ord(stringData[i])
+
+    return key
+
+start = time.time()
+size = 15001
+hashTitleTable = [None] * size
+hashQuoteTable = [None] * size
+
+file = "MOCK_DATA.csv"
+counter = 0
+titleCollisions = 0
+quoteCollisions = 0
+
+with open(file, 'r', newline='', encoding="utf8") as csvfile:
+    reader = csv.reader(csvfile)
+    for row in reader:
+        # create a DataItem from row
+        if counter != 0:
+            temp = DataItem(row)
+        # feed appropriate field into the hashfunction to get a key
+            titleKey = hashFunction(temp.title)
+            quoteKey = hashFunction(temp.quote)
+        # mod the key value by the hash table length
+            titleLoc = titleKey % len(hashTitleTable)
+            quoteLoc = quoteKey % len(hashQuoteTable)
+        # try to insert DataItem into hash table
+            if hashTitleTable[titleLoc] == None:
+                hashTitleTable[titleLoc] = temp
+        # handle any collisions
+            else:
+                titleCollisions += 1
+                while hashTitleTable[titleLoc] != None:
+                    titleLoc += 1
+                    if (titleLoc+1) == len(hashTitleTable):
+                        titleLoc = 0
+                    if hashTitleTable[titleLoc] == None:
+                        hashTitleTable[titleLoc] = temp
+                        break
+            if hashQuoteTable[quoteLoc] == None:
+                hashQuoteTable[quoteLoc] = temp
+            else:
+                quoteCollisions += 1
+                while hashQuoteTable[quoteLoc] != None:
+                    quoteLoc += 1
+                    if (quoteLoc+1) == len(hashQuoteTable):
+                        quoteLoc = 0
+                    if hashQuoteTable[quoteLoc] == None:
+                        hashQuoteTable[quoteLoc] = temp
+                        break
+        counter += 1
+end = time.time()
+
+
+print("Attempt 1")
+print(f"Title table collisions: {titleCollisions}")
+print(f"Quote table collisions: {quoteCollisions}")
+titleEmptySpace = 0
+quoteEmptySpace = 0
+for i in range(len(hashTitleTable)-1):
+    if hashTitleTable[i] == None:
+        titleEmptySpace += 1
+for i in range(len(hashQuoteTable)-1):
+    if hashQuoteTable[i] == None:
+        quoteEmptySpace += 1
+print(f"Title table empty space: {titleEmptySpace}")
+print(f"Quote table empty space: {quoteEmptySpace}")
+print(f"Constructing both hash tables took {end-start:0.2f} seconds")
