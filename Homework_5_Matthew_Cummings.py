@@ -18,16 +18,20 @@ class DataItem:
         self.prodComp = line[7]
         self.quote = line[8]
 
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
 
 def hashFunction(stringData):
     key = 0
     for i in range (len(stringData)):
         key = key + ord(stringData[i])
+    key = key % 7
     return key
+
+def hash2(stringData):
+    key = 0 
+    for i in range (len(stringData)):
+        key = key + ord(stringData[i])
+    key = 1+ (key % 5)
+    return key 
 
 # This function was acquired from the internet, specifically https://mojoauth.com/hashing/bernsteins-hash-djb2-in-python/
 def djbHash(stringData):
@@ -37,7 +41,7 @@ def djbHash(stringData):
     return key
 
 start = time.time()
-size = 8000
+size = 15001
 hashTitleTable = [None] * size
 hashQuoteTable = [None] * size
 
@@ -53,48 +57,45 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
         if counter != 0:
             temp = DataItem(row)
         # feed appropriate field into the hashfunction to get a key
-            titleKey = djbHash(temp.title)
-            quoteKey = djbHash(temp.quote)
+            titleKey = hashFunction(temp.title)
+            quoteKey = hashFunction(temp.quote)
         # mod the key value by the hash table length
             titleLoc = titleKey % len(hashTitleTable)
             quoteLoc = quoteKey % len(hashQuoteTable)
         # try to insert DataItem into hash table
             if hashTitleTable[titleLoc] == None:
-                hashTitleTable[titleLoc] = Node(temp)
+                hashTitleTable[titleLoc] = temp
         # handle any collisions
             else:
                 titleCollisions += 1
-                hashTitleTable[titleLoc].next = Node(temp)
-                '''
+                #hashTitleTable[titleLoc].next = Node(temp)
+                hashNum = 0
                 while hashTitleTable[titleLoc] != None:
-                    titleLoc += 1
-                    if (titleLoc+1) == len(hashTitleTable):
-                        titleLoc = 0
-                    if hashTitleTable[titleLoc] == None:
-                        hashTitleTable[titleLoc] = temp
+                    hashNum +=1
+                    newHash = (titleLoc + (hashNum * hash2(temp.title))) % len(hashTitleTable)
+                    if hashTitleTable[newHash] == None:
+                        hashTitleTable[newHash] = temp
                         break
-                        '''
+                        
         # try to insert DataItem into Table
             if hashQuoteTable[quoteLoc] == None:
-                hashQuoteTable[quoteLoc] = Node(temp)
+                hashQuoteTable[quoteLoc] = temp
             else:
         # handle any collisions
                 quoteCollisions += 1
-                hashQuoteTable[quoteLoc].next = Node(temp)
-                '''
+                #hashQuoteTable[quoteLoc].next = Node(temp)
+                hashNum = 0
                 while hashQuoteTable[quoteLoc] != None:
-                    quoteLoc += 1
-                    if (quoteLoc+1) == len(hashQuoteTable):
-                        quoteLoc = 0
-                    if hashQuoteTable[quoteLoc] == None:
-                        hashQuoteTable[quoteLoc] = temp
+                    hashNum += 1
+                    newHash = (quoteLoc + (hashNum * hash2(temp.quote))) % len(hashQuoteTable)
+                    if hashQuoteTable[newHash] == None:
+                        hashQuoteTable[newHash] = temp
                         break
-                        '''
         counter += 1
 end = time.time()
 
 
-print("Attempt 3")
+print("Attempt 4")
 print(f"Title table collisions: {titleCollisions}")
 print(f"Quote table collisions: {quoteCollisions}")
 titleEmptySpace = 0
