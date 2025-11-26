@@ -2,6 +2,7 @@
 # Date: 11/25/2025
 # Hash something out
 
+
 import csv
 import time
 
@@ -21,7 +22,13 @@ def hashFunction(stringData):
     key = 0
     for i in range (len(stringData)):
         key = key + ord(stringData[i])
+    return key
 
+# This function was acquired from the internet, specifically https://mojoauth.com/hashing/bernsteins-hash-djb2-in-python/
+def djbHash(stringData):
+    key = 5381
+    for char in stringData:
+        key = ((key << 5) + key) + ord(char)
     return key
 
 start = time.time()
@@ -41,8 +48,8 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
         if counter != 0:
             temp = DataItem(row)
         # feed appropriate field into the hashfunction to get a key
-            titleKey = hashFunction(temp.title)
-            quoteKey = hashFunction(temp.quote)
+            titleKey = djbHash(temp.title)
+            quoteKey = djbHash(temp.quote)
         # mod the key value by the hash table length
             titleLoc = titleKey % len(hashTitleTable)
             quoteLoc = quoteKey % len(hashQuoteTable)
@@ -59,9 +66,11 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
                     if hashTitleTable[titleLoc] == None:
                         hashTitleTable[titleLoc] = temp
                         break
+        # try to insert DataItem into Table
             if hashQuoteTable[quoteLoc] == None:
                 hashQuoteTable[quoteLoc] = temp
             else:
+        # handle any collisions
                 quoteCollisions += 1
                 while hashQuoteTable[quoteLoc] != None:
                     quoteLoc += 1
@@ -74,7 +83,7 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
 end = time.time()
 
 
-print("Attempt 1")
+print("Attempt 2")
 print(f"Title table collisions: {titleCollisions}")
 print(f"Quote table collisions: {quoteCollisions}")
 titleEmptySpace = 0
