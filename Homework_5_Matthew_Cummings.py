@@ -18,6 +18,11 @@ class DataItem:
         self.prodComp = line[7]
         self.quote = line[8]
 
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
 def hashFunction(stringData):
     key = 0
     for i in range (len(stringData)):
@@ -32,7 +37,7 @@ def djbHash(stringData):
     return key
 
 start = time.time()
-size = 15001
+size = 8000
 hashTitleTable = [None] * size
 hashQuoteTable = [None] * size
 
@@ -55,10 +60,12 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
             quoteLoc = quoteKey % len(hashQuoteTable)
         # try to insert DataItem into hash table
             if hashTitleTable[titleLoc] == None:
-                hashTitleTable[titleLoc] = temp
+                hashTitleTable[titleLoc] = Node(temp)
         # handle any collisions
             else:
                 titleCollisions += 1
+                hashTitleTable[titleLoc].next = Node(temp)
+                '''
                 while hashTitleTable[titleLoc] != None:
                     titleLoc += 1
                     if (titleLoc+1) == len(hashTitleTable):
@@ -66,12 +73,15 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
                     if hashTitleTable[titleLoc] == None:
                         hashTitleTable[titleLoc] = temp
                         break
+                        '''
         # try to insert DataItem into Table
             if hashQuoteTable[quoteLoc] == None:
-                hashQuoteTable[quoteLoc] = temp
+                hashQuoteTable[quoteLoc] = Node(temp)
             else:
         # handle any collisions
                 quoteCollisions += 1
+                hashQuoteTable[quoteLoc].next = Node(temp)
+                '''
                 while hashQuoteTable[quoteLoc] != None:
                     quoteLoc += 1
                     if (quoteLoc+1) == len(hashQuoteTable):
@@ -79,11 +89,12 @@ with open(file, 'r', newline='', encoding="utf8") as csvfile:
                     if hashQuoteTable[quoteLoc] == None:
                         hashQuoteTable[quoteLoc] = temp
                         break
+                        '''
         counter += 1
 end = time.time()
 
 
-print("Attempt 2")
+print("Attempt 3")
 print(f"Title table collisions: {titleCollisions}")
 print(f"Quote table collisions: {quoteCollisions}")
 titleEmptySpace = 0
